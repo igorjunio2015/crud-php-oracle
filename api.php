@@ -90,43 +90,47 @@ if ($method === 'GET') {
     }
     oci_close($conn);
 } else if ($method === 'PUT') {
-    
-    
-    
-
-    
+    //method PUT    
+    //https://api.com/users?id_empresa=X&chapa=XXXXX&lmover=XXXXX
+    /*  {
+            "ID_EMPRESA": "2",
+            "CHAPA": "17594",
+            "LMOVER": "igor.melo.teste"
+        }
+    */
 
     $jsonBody = json_decode($body, true);
 
     $message = [];
-    if (!isset($jsonBody["ID_EMPRESA"])) {
+    if (!isset($jsonBody["ID_EMPRESA"]) || !isset($_GET["ID_EMPRESA"])) {
         $id_empresa = "";
-        array_push($message, "IDEMPRESA is required in body.");
+        array_push($message, "ID_EMPRESA is required in body.");
     } else {
-        $param_id_empresa = $_GET['id_empresa'];
-        //echo $param_id_empresa;
+        $param_id_empresa = $_GET['ID_EMPRESA'];
         $id_empresa = $jsonBody["ID_EMPRESA"];
     }
-    if (!isset($jsonBody["CHAPA"])) {
+    if (!isset($jsonBody["CHAPA"]) || !isset($_GET["CHAPA"])) {
         $chapa = "";
-        array_push($message, "CHAPA is required in body.");
+        array_push($message, "CHAPA is required in body and param.");
     } else {
-        $param_chapa = $_GET['chapa'];
-        //echo $param_chapa;
+        $param_chapa = $_GET['CHAPA'];
         $chapa = $jsonBody["CHAPA"];
     }
-    if (!isset($jsonBody["LMOVER"])) {
+    if (!isset($jsonBody["LMOVER"]) || !isset($_GET["LMOVER"])) {
         $lmover = "";
-        array_push($message, "LMOVER is required in body.");
+        array_push($message, "LMOVER is required in body and param.");
     } else {
-        $param_lmover = $_GET['lmover'];
-        //echo $param_lmover;
+        $param_lmover = $_GET['LMOVER'];
         $lmover = $jsonBody["LMOVER"];
     }
 
+
+
     if (count($message) != 0) {
         echo json_encode($message, JSON_PRETTY_PRINT);
-    } else { }
+    } else {
+        echo "else PUT";
+    }
 } else {
     echo json_encode("Method not permited", JSON_PRETTY_PRINT);
 }
