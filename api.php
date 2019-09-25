@@ -90,11 +90,11 @@ if ($method === 'GET') {
     }
     oci_close($conn);
 } else if ($method === 'PUT') {
-    $param_id_empresa = explode('/', $_GET['id_empresa']);
-    $param_chapa = explode('/', $_GET['chapa']);
-    $param_lmover = explode('/', $_GET['lmover']);
+    
+    
+    
 
-    echo $param_chapa[0];
+    
 
     $jsonBody = json_decode($body, true);
 
@@ -103,18 +103,24 @@ if ($method === 'GET') {
         $id_empresa = "";
         array_push($message, "IDEMPRESA is required in body.");
     } else {
+        $param_id_empresa = $_GET['id_empresa'];
+        //echo $param_id_empresa;
         $id_empresa = $jsonBody["ID_EMPRESA"];
     }
     if (!isset($jsonBody["CHAPA"])) {
         $chapa = "";
         array_push($message, "CHAPA is required in body.");
     } else {
+        $param_chapa = $_GET['chapa'];
+        //echo $param_chapa;
         $chapa = $jsonBody["CHAPA"];
     }
     if (!isset($jsonBody["LMOVER"])) {
         $lmover = "";
         array_push($message, "LMOVER is required in body.");
     } else {
+        $param_lmover = $_GET['lmover'];
+        //echo $param_lmover;
         $lmover = $jsonBody["LMOVER"];
     }
 
