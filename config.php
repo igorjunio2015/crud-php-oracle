@@ -1,15 +1,34 @@
 <?php
-$user = "sys";
-$pwid = "asad2045";
-$dbname = "localhost:1522/xe";
-$session_mode = OCI_SYSDBA;
+class Database
+{
+    private $host = "localhost:1522/xe";
+    private $username = "sys";
+    private $password = "asad2045";
+    private $session_mode = OCI_SYSDBA;
+    private $conexao = null;
 
-//$conn = oci_connect($user, $pwid, $dbname, $session_mode );
-$conn = oci_connect($user, $pwid , $dbname, '',$session_mode );
+    public function __construct()
+    {
+        $this->conecta();
+    }
+    public function getConection()
+    {
+        return $this->conexao;
+    }
 
-if (!$conn) {
-   $m = oci_error();
-   echo $m['message'], "\n";
-   exit;
+    private function conecta()
+    {
+        $this->conexao = oci_connect(
+            $this->username,
+            $this->password,
+            $this->host,
+            '',
+            $this->session_mode
+        );
+        if (!$this->conexao) {
+            $m = oci_error();
+            echo $m['message'], "\n";
+            exit;
+        }
+    }
 }
-?>
