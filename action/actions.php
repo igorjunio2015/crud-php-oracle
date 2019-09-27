@@ -1,6 +1,6 @@
 <?php
-require_once('../LoginSoftExpert.php');
-require_once('../LoginSoftExpertDAO.php');
+require_once('../LoginSistema.php');
+require_once('../LoginSistemaDAO.php');
 require_once('../config.php');
 
 header('Content-type: application/json');
@@ -24,7 +24,7 @@ class Listar
     public function procurarUsuario()
     {
         $db      = new Database();
-        $dao     = new LoginSoftExpertDAO($db);
+        $dao     = new LoginSistemaDAO($db);
         $conexao = $db->getConection();
 
         if (!isset($_GET['chapa'])) {
@@ -46,7 +46,7 @@ class Incluir
     public function inserirUsuario()
     {
         $db      = new Database();
-        $dao     = new LoginSoftExpertDAO($db);
+        $dao     = new LoginSistemaDAO($db);
         $conexao = $db->getConection();
         $body = file_get_contents('php://input');
         $jsonBody = json_decode($body, true);
@@ -99,21 +99,31 @@ class Modificar
     public function modificarUsuario()
     {
         $db      = new Database();
-        $dao     = new LoginSoftExpertDAO($db);
+        $dao     = new LoginSistemaDAO($db);
         $conexao = $db->getConection();
         $body = file_get_contents('php://input');
         $jsonBody = json_decode($body, true);
 
         if (isset($_GET['idempresa']) && isset($_GET['chapa']) && isset($_GET['lmover'])) {
-            $dao->modificar(
+            $checarExiste = $dao->procurar(
                 $conexao,
                 array(
                     'idEmpresa' => $jsonBody['ID_EMPRESA'], 'chapa' => $jsonBody['CHAPA'], 'lmover' => $jsonBody['LMOVER']
-                ),
-                array(
-                    'idEmpresaSelect' => $_GET['idempresa'], 'chapaSelect' => $_GET['chapa'], 'lmoverSelect' => $_GET['lmover']
                 )
             );
+            if (!empty($checarExiste)) {
+                $dao->modificar(
+                    $conexao,
+                    array(
+                        'idEmpresa' => $jsonBody['ID_EMPRESA'], 'chapa' => $jsonBody['CHAPA'], 'lmover' => $jsonBody['LMOVER']
+                    ),
+                    array(
+                        'idEmpresaSelect' => $_GET['idempresa'], 'chapaSelect' => $_GET['chapa'], 'lmoverSelect' => $_GET['lmover']
+                    )
+                );
+            } else {
+                echo json_encode(["Not Exists" => "The user not exists in the database."], JSON_PRETTY_PRINT);
+            }
         } else {
             print json_encode(["Error" => "Verify params url."], JSON_PRETTY_PRINT);
         }
