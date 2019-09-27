@@ -30,7 +30,7 @@ class Listar
         if (!isset($_GET['chapa'])) {
             print json_encode("Path is required 'CHAPA'", JSON_PRETTY_PRINT);
         } else {
-            $dao->procurar($conexao, array(
+            echo $dao->procurar($conexao, array(
                 'chapa' => $_GET['chapa']
             ));
         }
