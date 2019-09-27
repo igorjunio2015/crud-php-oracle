@@ -2,7 +2,9 @@
 require_once('../LoginSoftExpert.php');
 require_once('../LoginSoftExpertDAO.php');
 require_once('../config.php');
-new Listar();
+header('Content-type: application/json');
+//new Listar();
+new Incluir();
 class Listar
 {
     public function __construct()
@@ -12,10 +14,6 @@ class Listar
 
     public function procurarUsuario()
     {
-        require_once('../LoginSoftExpert.php');
-        require_once('../LoginSoftExpertDAO.php');
-        require_once('../config.php');
-
         $db      = new Database();
         $dao     = new LoginSoftExpertDAO($db);
         $conexao = $db->getConection();
@@ -33,32 +31,42 @@ class Listar
 
 class Incluir
 {
+    public function __construct()
+    {
+        $this->inserirUsuario();
+    }
     public function inserirUsuario()
     {
-        require_once('../LoginSoftExpert.php');
-        require_once('../LoginSoftExpertDAO.php');
-        require_once('../config.php');
-
         $db      = new Database();
         $dao     = new LoginSoftExpertDAO($db);
         $conexao = $db->getConection();
-        $c       = 0;
+        $body = file_get_contents('php://input');
+        $jsonBody = json_decode($body, true);
 
-        if (!isset($_GET['chapa'])) {
-            $c += 1;
-            print json_encode("Path is required 'CHAPA'.", JSON_PRETTY_PRINT);
+        $message = [];
+        if (!isset($jsonBody["ID_EMPRESA"])) {
+            array_push($message, "IDEMPRESA is required in body.");
+        } else {
+            $idEmpresa = $jsonBody["ID_EMPRESA"];
         }
-        if (!isset($_GET['idempresa'])) {
-            $c += 1;
-            print json_encode("Path is required 'IDEMPRESA'.", JSON_PRETTY_PRINT);
+
+        if (!isset($jsonBody["CHAPA"])) {
+            array_push($message, "CHAPA is required in body.");
+        } else {
+            $chapa = $jsonBody["CHAPA"];
         }
-        if (!isset($_GET['lmover'])) {
-            $c += 1;
-            print json_encode("Path is required 'LMOVER'.", JSON_PRETTY_PRINT);
+
+        if (!isset($jsonBody["LMOVER"])) {
+            array_push($message, "LMOVER is required in body.");
+        } else {
+            $lmover = $jsonBody["LMOVER"];
         }
-        if ($c === 0) {
+
+        if (count($message) != 0) {
+            echo json_encode($message, JSON_PRETTY_PRINT);
+        } else {
             $dao->inserir($conexao, array(
-                'idempresa' => $_GET['idempresa'], 'chapa' => $_GET['chapa'], 'lmover' => $_GET['lmover']
+                'idEmpresa' => $idEmpresa, 'chapa' => $chapa, 'lmover' => $lmover
             ));
         }
         return 'Incluir';
