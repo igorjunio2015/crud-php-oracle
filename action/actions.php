@@ -1,7 +1,7 @@
 <?php
 require_once('../LoginSistema.php');
 require_once('../LoginSistemaDAO.php');
-require_once('../config.php');
+require_once('../database/config.php');
 
 header('Content-type: application/json');
 
