@@ -2,7 +2,7 @@
 class LoginSoftExpertDAO
 {
     private $db;
-    
+
     public function __construct(Database $db)
     {
         $this->db = $db;
@@ -82,8 +82,8 @@ class LoginSoftExpertDAO
                                 sls.lmover = '$lmover'))";
 
                 $query = oci_parse($conexao, $sql);
-                $result_sql = oci_execute($query);
-                if ($result_sql) {
+                $result = oci_execute($query);
+                if ($result) {
                     print json_encode(["Success" => "Data successfully inserted into database.."], JSON_PRETTY_PRINT);
                 } else {
                     print json_encode(["Error" => "Could not insert data into database, check."], JSON_PRETTY_PRINT);
@@ -96,31 +96,50 @@ class LoginSoftExpertDAO
         }
     }
 
-    public function modificar($conexao, $parametros)
+    public function modificar($conexao, $parametros, $parametrosSelect)
     {
         try {
+            echo json_encode(array(
+                $parametros['idEmpresa'], $parametros['chapa'], $parametros['lmover'], $parametrosSelect['idEmpresaSelect'], $parametrosSelect['chapaSelect'], $parametrosSelect['lmoverSelect']
+            ));
+
             if (
                 !empty($parametros['idEmpresa'] &&
                     !empty($parametros['chapa'] &&
-                        !empty($parametros['lmover'])))
+                        !empty($parametros['lmover'] &&
+                            !empty($parametrosSelect['idEmpresaSelect'] &&
+                                !empty($parametrosSelect['chapaSelect'] &&
+                                    !empty($parametrosSelect['lmoverSelect']))))))
             ) {
                 $sql = "
                     update
                         sys.login_sistema sls
                     set 
-                        sls.id_empresa = 3
-                        ,sls.chapa = '17594'
-                        ,sls.lmover = 'igor.teste_'
+                        sls.id_empresa = " . $parametros['idEmpresa'] . "
+                        ,sls.chapa = '" . $parametros['chapa'] . "'
+                        ,sls.lmover = '" . $parametros['lmover'] . "'
                     where
-                            sls.id_empresa = " . $parametros['idEmpresa'] . "
+                            sls.id_empresa = " . $parametrosSelect['idEmpresaSelect'] . "
                     and
-                            sls.chapa = '" . $parametros['chapa'] . "'
+                            sls.chapa = '" . $parametrosSelect['chapaSelect'] . "'
                     and
-                            sls.lmover = '" . $parametros['lmover'] . "'";
+                            sls.lmover = '" . $parametrosSelect['lmoverSelect'] . "'";
                 $query = oci_parse($conexao, $sql);
-                oci_execute($query);
+                $result = oci_execute($query);
+
+                if ($result) {
+                    print json_encode(["Success" => "Data uptated in database.."], JSON_PRETTY_PRINT);
+                } else {
+                    print json_encode(["Error" => "Could not uptated data in database, check."], JSON_PRETTY_PRINT);
+                }
             } else {
-                print json_encode("Check body scope, 'ID_EMPRESA', 'CHAPA' and 'LMOVER' is required.", JSON_PRETTY_PRINT);
+                $error = [
+                    "Check params = 'idEmpresa', 'chapa', 'lmover'.", "Check body = 'ID_EMPRESA', 'CHAPA', 'LMOVER'."
+                ];
+                print json_encode([
+                    "Params" => "Check 'idEmpresa', 'chapa', 'lmover'.",
+                    "Body" => "Check 'ID_EMPRESA', 'CHAPA', 'LMOVER'."
+                ], JSON_PRETTY_PRINT);
             }
         } catch (Exception $e) {
             return $e;
