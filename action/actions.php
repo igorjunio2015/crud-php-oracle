@@ -1,18 +1,29 @@
-<?php  
+<?php
 
-require_once ('../LoginSoftExpert.php');
-require_once ('../LoginSoftExpertDAO.php');
-require_once ('../Database.php');
+new Listar();
+class Listar
+{
+    public function __construct()
+    {
+        $this->procurarUsuario();
+    }
+    public function procurarUsuario()
+    {
+        require_once('../LoginSoftExpert.php');
+        require_once('../LoginSoftExpertDAO.php');
+        require_once('../config.php');
 
-$db      = new Database();
-$dao     = new LoginSoftExpertDAO($db);
+        $db      = new Database();
+        $conexao = $db->getConection();
+        $dao     = new LoginSoftExpertDAO($db);
 
-$LoginSoftExpert = new LoginSoftExpert();
-$LoginSoftExpert->setIdEmpresa($idEmpresa);
-$LoginSoftExpert->setChapa($chapa);
-$LoginSoftExpert->setLmover($lmover);
-
-$dao->add($produto); // aqui grava o resultado enviado do form
-
-redirect('Location:index.php');
-
+        if (!isset($_GET['chapa'])) {
+            print json_encode("Path is required 'CHAPA'", JSON_PRETTY_PRINT);
+        } else {
+            $dao->procurar($conexao, array(
+                'chapa' => $_GET['chapa']
+            ));
+        }
+        return 'Listar';
+    }
+}

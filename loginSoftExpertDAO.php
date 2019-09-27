@@ -12,28 +12,46 @@ class LoginSoftExpertDAO
         $idEmpresa = $LoginSoftExpert->getIdEmpresa();
         $chapa = $LoginSoftExpert->getChapa();
         $lmover = $LoginSoftExpert->getLmover();
-
-        $query = "INSERT INTO produtos (idEmpresa, chapa, lmover) VALUES(?,?,?)";
-
-        $stmt = mysqli_prepare($this->db->getConection(), $query);
-        mysqli_stmt_bind_param($stmt, 'sss', $idEmpresa, $chapa, $lmover);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
     }
 
-    public function procurar(LoginSoftExpert $LoginSoftExpert)
+    public function procurar($conexao, $parametros)
     {
-        $chapa = $LoginSoftExpert->setChapa($_GET['chapa']);
-        if ($chapa) {
-            $sql = "select * from SYS.login_sistema sls 
-              where sls.chapa like '%$chapa%'";
-            $query = oci_parse($this->db->getConection(), $sql);
-            oci_execute($query);
-            while ($row = oci_fetch_array($query)) {
-                print json_encode(["COD_EMPRESA" => $row[0], "CHAPA" => $row[1], "LOGIN_SAP" => $row[2]], JSON_PRETTY_PRINT);
+        try {
+            if (!empty($parametros['chapa'])) {
+                if (!empty($parametros['chapa'])) {
+                    $chapa = $parametros['chapa'];
+                    $sql = "select 
+                         sls.id_empresa
+                        ,sls.chapa
+                        ,sls.lmover
+                    from 
+                         SYS.login_sistema sls 
+                    where 
+                         sls.chapa like '%$chapa%'";
+                }
+                if (!empty($parametros['idEmpresa'])) {
+                    $idEmpresa = $parametros['idEmpresa'];
+                    $sql .= "and sls.id_empresa = $idEmpresa";
+                }
+                if (!empty($parametros['lmover'])) {
+                    $lmover = $parametros['lmover'];
+                    $sql .= "and sls.id_empresa = $lmover";
+                }
+                $query = oci_parse($conexao, $sql);
+                oci_execute($query);
+                while ($row = oci_fetch_array($query)) {
+                    print json_encode([
+                        "COD_EMPRESA" => $row[0],
+                        "CHAPA" => $row[1],
+                        "LOGIN_MOVER" => $row[2]
+                    ], JSON_PRETTY_PRINT);
+                }
+                
+            } else {
+                print json_encode("Path is required 'CHAPA'", JSON_PRETTY_PRINT);
             }
-        } else {
-            print json_encode("Path is required 'CHAPA'", JSON_PRETTY_PRINT);
+        } catch (Exception $e) {
+            return $e;
         }
     }
 }
