@@ -7,11 +7,13 @@ class LoginSoftExpertDAO
         $this->db = $db;
     }
 
-    public function inserir(LoginSoftExpert $LoginSoftExpert)
+    public function inserir($conexao, $parametros)
     {
-        $idEmpresa = $LoginSoftExpert->getIdEmpresa();
-        $chapa = $LoginSoftExpert->getChapa();
-        $lmover = $LoginSoftExpert->getLmover();
+        try {
+
+        }catch(Exception $e){
+            return $e;
+        }
     }
 
     public function procurar($conexao, $parametros)
