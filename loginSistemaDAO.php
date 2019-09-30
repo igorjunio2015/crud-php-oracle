@@ -84,7 +84,14 @@ class LoginSistemaDAO
                 $query = oci_parse($conexao, $sql);
                 $result = oci_execute($query);
                 if ($result) {
-                    print json_encode(["Success" => "Data successfully inserted into database.."], JSON_PRETTY_PRINT);
+                    print json_encode([
+                        "Success" => "Data successfully inserted into database..",
+                        "Data" => [
+                            "ID_EMPRESA" => $parametros['idEmpresa'],
+                            "CHAPA" => $parametros['chapa'],
+                            "LMOVER" => $parametros['lmover']
+                        ]
+                    ], JSON_PRETTY_PRINT);
                 } else {
                     print json_encode(["Error" => "Could not insert data into database, check."], JSON_PRETTY_PRINT);
                 }
