@@ -5,15 +5,9 @@ require_once('../database/config.php');
 
 header('Content-type: application/json');
 
-/*
-if ($method === 'POST') {
-    new Incluir();
-} else if ($method === 'PUT') {
-    new Modificar();
-}
-*/
 $db      = new Database();
 $conexao = $db->getConection();
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $listar = new Listar();
     $listar->execute($conexao);
@@ -48,6 +42,7 @@ class Listar
         return 'Listar';
     }
 }
+
 class Incluir
 {
     public function execute($conexao)
