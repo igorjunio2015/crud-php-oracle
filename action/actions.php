@@ -4,6 +4,7 @@ require_once('../LoginSistemaDAO.php');
 require_once('../database/config.php');
 
 header('Content-type: application/json');
+// Version 1.0
 
 $method = $_SERVER['REQUEST_METHOD'];
 
