@@ -118,15 +118,7 @@ class LoginSistemaDAO
     public function modificar($conexao, $parametros, $parametrosSelect)
     {
         try {
-            if (
-                !empty($parametros['idEmpresa'] &&
-                    !empty($parametros['chapa'] &&
-                        !empty($parametros['lmover'] &&
-                            !empty($parametrosSelect['idEmpresaSelect'] &&
-                                !empty($parametrosSelect['chapaSelect'] &&
-                                    !empty($parametrosSelect['lmoverSelect']))))))
-            ) {
-                $sql = "
+            $sql = "
                     update
                         sys.login_sistema sls
                     set 
@@ -139,20 +131,33 @@ class LoginSistemaDAO
                             sls.chapa = '" . $parametrosSelect['chapaSelect'] . "'
                     and
                             sls.lmover = '" . $parametrosSelect['lmoverSelect'] . "'";
-                $query = oci_parse($conexao, $sql);
-                $result = oci_execute($query);
+            $query = oci_parse($conexao, $sql);
 
-                if ($result) {
-                    print json_encode(["Success" => "Data uptated in database."], JSON_PRETTY_PRINT);
-                } else {
-                    print json_encode(["Error" => "Could not uptated data in database, check."], JSON_PRETTY_PRINT);
-                }
-            } else {
-                print json_encode([
-                    "Params" => "Check 'idEmpresa', 'chapa', 'lmover'.",
-                    "Body" => "Check 'ID_EMPRESA', 'CHAPA', 'LMOVER'."
-                ], JSON_PRETTY_PRINT);
+            if (!oci_execute($query)) {
+                $error  = oci_error($query);
+                $e      = implode(', ', $error);
+                oci_rollback($conexao);
+                $aux["SUCESSO"]     = false;
+                $aux["MODIFICADO"]  = false;
+                $aux["RESPOSTA"]    = "ERRO AO MODIFICAR" . $e;
+                return $aux;
             }
+            $aux["SUCESSO"]     = true;
+            $aux["MODIFICADO"]   = true;
+            $aux["RESPOSTA"]    = "DADOS MODIFICADOS COM SUCESSO";
+            $aux["DADOS"]["ORIGINAIS"]
+                = [
+                    "ID_EMPRESA"    => $parametrosSelect['idEmpresaSelect'],
+                    "CHAPA"         => $parametrosSelect['chapaSelect'],
+                    "LMOVER"        => $parametrosSelect['lmoverSelect']
+                ];
+            $aux["DADOS"]["NOVOS"] =
+                [
+                    "ID_EMPRESA"    => $parametros['idEmpresa'],
+                    "CHAPA"         => $parametros['chapa'],
+                    "LMOVER"        => $parametros['lmover']
+                ];
+            return $aux;
         } catch (Exception $e) {
             return $e;
         }

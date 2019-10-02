@@ -101,7 +101,7 @@ class Incluir
                 echo json_encode($message, JSON_PRETTY_PRINT);
             }
         } else {
-            $error = ["METODO" => "METODO NAO PERMITIDO, USAR POST PARA ESSA REQUISICAO."];
+            $error = ["ERRO" => "METODO NAO PERMITIDO, USAR POST PARA ESSA REQUISICAO."];
             echo json_encode($error);
         }
         return 'Incluir';
@@ -126,53 +126,83 @@ class Modificar
                 || (!isset($jsonBody["CHAPA"]))
                 || (!isset($jsonBody["LMOVER"]))
             ) {
-                $message["MENSAGEM"] = "NAO FOI POSSIVEL PROSSEGUIR, FALTA DADOS";
+                $message["MENSAGEM"]
+                    = "NAO FOI POSSIVEL PROSSEGUIR, FALTA DADOS";
             }
             // set IDEMPRESA
             if (!isset($jsonBody["ID_EMPRESA"])) {
-                $message["CORPO"]["IDEMPRESA"] = "INFORMAR VALOR PARA 'IDEMPRESA' NO BODY";
+                $message["CORPO"]["IDEMPRESA"]
+                    = "INFORMAR VALOR PARA 'IDEMPRESA' NO BODY";
             } else {
+                if (!isset($_GET['IDEMPRESA'])) {
+                    $message["PARAMETROS"]["IDEMPRESA"]
+                        = "INFORMAR VALOR PARA 'IDEMPRESA' NOS PARAMETROS";
+                } else {
+                    $idEmpresaParam = $_GET['IDEMPRESA'];
+                }
                 $idEmpresa = $jsonBody["ID_EMPRESA"];
             }
             // set CHAPA
             if (!isset($jsonBody["CHAPA"])) {
-                $message["CORPO"]["CHAPA"] = "INFORMAR VALOR PARA 'CHAPA' NO BODY";
+                $message["CORPO"]["CHAPA"]
+                    = "INFORMAR VALOR PARA 'CHAPA' NO BODY";
             } else {
+                if (!isset($_GET['CHAPA'])) {
+                    $message["PARAMETROS"]["CHAPA"]
+                        = "INFORMAR VALOR PARA 'CHAPA' NOS PARAMETROS";
+                } else {
+                    $chapaParam = $_GET['CHAPA'];
+                }
                 $chapa = $jsonBody["CHAPA"];
             }
             // set LMOVER
             if (!isset($jsonBody["LMOVER"])) {
-                $message["CORPO"]["LMOVER"] = "INFORMAR VALOR PARA 'LMOVER' NO BODY";
+                $message["CORPO"]["LMOVER"]
+                    = "INFORMAR VALOR PARA 'LMOVER' NO BODY";
             } else {
+                if (!isset($_GET['LMOVER'])) {
+                    $message["PARAMETROS"]["LMOVER"]
+                        = "INFORMAR VALOR PARA 'LMOVER' NOS PARAMETROS";
+                } else {
+                    $lmoverParam = $_GET['LMOVER'];
+                }
                 $lmover = $jsonBody["LMOVER"];
             }
             // contador de erro
-
-            if (isset($_GET['idempresa']) && isset($_GET['chapa']) && isset($_GET['lmover'])) {
+            if (count($message) === 0) {
                 $checarExiste = $loginSistemaDAO->procurar(
                     $conexao,
                     array(
-                        'idEmpresa' => $jsonBody['ID_EMPRESA'], 'chapa' => $jsonBody['CHAPA'], 'lmover' => $jsonBody['LMOVER']
+                        'idEmpresa' => $jsonBody['ID_EMPRESA'],
+                        'chapa'     => $jsonBody['CHAPA'],
+                        'lmover'    => $jsonBody['LMOVER']
                     )
                 );
-                if (!empty($checarExiste)) {
-                    $loginSistemaDAO->modificar(
+                if ($checarExiste["EXISTE"] = true) {
+                    $modificado = $loginSistemaDAO->modificar(
                         $conexao,
                         array(
-                            'idEmpresa' => $jsonBody['ID_EMPRESA'], 'chapa' => $jsonBody['CHAPA'], 'lmover' => $jsonBody['LMOVER']
+                            'idEmpresa' => $idEmpresa,
+                            'chapa'     => $chapa,
+                            'lmover'    => $lmover
                         ),
                         array(
-                            'idEmpresaSelect' => $_GET['idempresa'], 'chapaSelect' => $_GET['chapa'], 'lmoverSelect' => $_GET['lmover']
+                            'idEmpresaSelect'   => $idEmpresaParam,
+                            'chapaSelect'       => $chapaParam,
+                            'lmoverSelect'      => $lmoverParam
                         )
                     );
+                    echo json_encode($modificado);
                 } else {
-                    echo json_encode(["Not Exists" => "The user not exists in the database."], JSON_PRETTY_PRINT);
+                    $notExists = ["RESPOSTA" => "USUARIO NAO EXISTE NO BANCO DE DADOS"];
+                    echo json_encode($notExists, JSON_PRETTY_PRINT);
                 }
             } else {
-                print json_encode(["Error" => "Verify params url."], JSON_PRETTY_PRINT);
+                echo json_encode($message, JSON_PRETTY_PRINT);
             }
         } else {
-            echo json_encode(["Error method" => "Method not permited, please use PUT."], JSON_PRETTY_PRINT);
+            $error = ["METODO" => "METODO NAO PERMITIDO, USAR 'PUT'"];
+            echo json_encode($error, JSON_PRETTY_PRINT);
         }
         return 'Modificar';
     }
