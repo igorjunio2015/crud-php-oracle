@@ -30,16 +30,16 @@ class Listar
 
             $loginSistemaDAO     = new LoginSistemaDAO($db);
             if (!isset($_GET['chapa'])) {
-                echo json_encode("Path is required 'CHAPA'", JSON_PRETTY_PRINT);
+                $message = json_encode(["response" => "Path is required 'CHAPA'"]);
             } else {
-                echo $loginSistemaDAO->procurar($conexao, array(
+                $message = json_encode($loginSistemaDAO->procurar($conexao, array(
                     'chapa' => $_GET['chapa']
-                ));
+                )));
             }
         } else {
-            echo json_encode(["Error method" => "Method not permited, please use GET."], JSON_PRETTY_PRINT);
+            $message = json_encode(["Error method" => "Method not permited, please use GET."], JSON_PRETTY_PRINT);
         }
-        return 'Listar';
+        echo $message;
     }
 }
 
@@ -54,44 +54,55 @@ class Incluir
 
             $body = file_get_contents('php://input');
             $jsonBody = json_decode($body, true);
-
             $message = [];
+
+            if ((!isset($jsonBody["ID_EMPRESA"]))
+                || (!isset($jsonBody["CHAPA"]))
+                || (!isset($jsonBody["LMOVER"]))
+            ) {
+                $message["MENSAGEM"] = "NAO FOI POSSIVEL PROSSEGUIR, FALTA DADOS";
+            }
             // set IDEMPRESA
             if (!isset($jsonBody["ID_EMPRESA"])) {
-                array_push($message, "IDEMPRESA is required in body.");
+                $message["CORPO"]["IDEMPRESA"] = "INFORMAR VALOR PARA 'IDEMPRESA' NO BODY";
             } else {
                 $idEmpresa = $jsonBody["ID_EMPRESA"];
             }
             // set CHAPA
             if (!isset($jsonBody["CHAPA"])) {
-                array_push($message, "CHAPA is required in body.");
+                $message["CORPO"]["CHAPA"] = "INFORMAR VALOR PARA 'CHAPA' NO BODY";
             } else {
                 $chapa = $jsonBody["CHAPA"];
             }
             // set LMOVER
             if (!isset($jsonBody["LMOVER"])) {
-                array_push($message, "LMOVER is required in body.");
+                $message["CORPO"]["LMOVER"] = "INFORMAR VALOR PARA 'LMOVER' NO BODY";
             } else {
                 $lmover = $jsonBody["LMOVER"];
             }
-
+            // contador de erro
             if (count($message) === 0) {
                 // check values exists in database
                 $checarExiste = $loginSistemaDAO->procurar($conexao, array(
                     'idEmpresa' => $idEmpresa, 'chapa' => $chapa, 'lmover' => $lmover
                 ));
-                if (!empty($checarExiste)) {
-                    echo json_encode(["Exists" => "The user already exists in the database."], JSON_PRETTY_PRINT);
-                } else {
-                    $loginSistemaDAO->inserir($conexao, array(
+                if ($checarExiste["EXISTE"] === false) {
+                    $inserido = $loginSistemaDAO->inserir($conexao, array(
                         'idEmpresa' => $idEmpresa, 'chapa' => $chapa, 'lmover' => $lmover
                     ));
+                    echo json_encode($inserido);
+                } else {
+                    $erroInserir["INSERIDO"] = false;
+                    $erroInserir["MENSAGEM"] = "DADOS JA EXISTENTE";
+                    $erroInserir["DADOS"] = $checarExiste["RESPOSTA"];
+                    echo json_encode($erroInserir);
                 }
             } else {
                 echo json_encode($message, JSON_PRETTY_PRINT);
             }
         } else {
-            echo json_encode(["Error method" => "Method not permited, please use POST."], JSON_PRETTY_PRINT);
+            $error = ["METODO" => "METODO NAO PERMITIDO, USAR POST PARA ESSA REQUISICAO."];
+            echo json_encode($error);
         }
         return 'Incluir';
     }
@@ -108,6 +119,35 @@ class Modificar
 
             $body = file_get_contents('php://input');
             $jsonBody = json_decode($body, true);
+
+            $message = [];
+
+            if ((!isset($jsonBody["ID_EMPRESA"]))
+                || (!isset($jsonBody["CHAPA"]))
+                || (!isset($jsonBody["LMOVER"]))
+            ) {
+                $message["MENSAGEM"] = "NAO FOI POSSIVEL PROSSEGUIR, FALTA DADOS";
+            }
+            // set IDEMPRESA
+            if (!isset($jsonBody["ID_EMPRESA"])) {
+                $message["CORPO"]["IDEMPRESA"] = "INFORMAR VALOR PARA 'IDEMPRESA' NO BODY";
+            } else {
+                $idEmpresa = $jsonBody["ID_EMPRESA"];
+            }
+            // set CHAPA
+            if (!isset($jsonBody["CHAPA"])) {
+                $message["CORPO"]["CHAPA"] = "INFORMAR VALOR PARA 'CHAPA' NO BODY";
+            } else {
+                $chapa = $jsonBody["CHAPA"];
+            }
+            // set LMOVER
+            if (!isset($jsonBody["LMOVER"])) {
+                $message["CORPO"]["LMOVER"] = "INFORMAR VALOR PARA 'LMOVER' NO BODY";
+            } else {
+                $lmover = $jsonBody["LMOVER"];
+            }
+            // contador de erro
+
             if (isset($_GET['idempresa']) && isset($_GET['chapa']) && isset($_GET['lmover'])) {
                 $checarExiste = $loginSistemaDAO->procurar(
                     $conexao,

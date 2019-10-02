@@ -21,7 +21,7 @@ class LoginSistemaDAO
                     from 
                          SYS.login_sistema sls 
                     where 
-                         sls.chapa like '%" . $parametros['chapa'] . "%'";
+                         sls.chapa = '" . $parametros['chapa'] . "'";
                 }
                 if (!empty($parametros['idEmpresa'])) {
                     $sql .= " and sls.id_empresa = " . $parametros['idEmpresa'] . "";
@@ -30,17 +30,33 @@ class LoginSistemaDAO
                     $sql .= " and sls.lmover = '" . $parametros['lmover'] . "'";
                 }
                 $query = oci_parse($conexao, $sql);
-                oci_execute($query);
-                while ($row = oci_fetch_array($query)) {
-                    $array = json_encode([
-                        "COD_EMPRESA" => $row[0],
-                        "CHAPA" => $row[1],
-                        "LOGIN_MOVER" => $row[2]
-                    ], JSON_PRETTY_PRINT);
+
+                if (!oci_execute($query)) {
+                    $error  = oci_error($query);
+                    $e      = implode(', ', $error);
+                    oci_rollback($conexao);
+                    $aux["SUCESSO"] = false;
+                    $aux["RESPOSTA"] = "ERRO AO PESQUISAR" . $e;
+                    return $aux;
                 }
-                if (isset($array)) {
-                    return $array;
+                $aux["SUCESSO"] = true;
+                $arrResposta = array();
+
+                $row = oci_fetch_array($query);
+                if ($row) {
+                    $arrResposta["COD_EMPRESA"] = $row[0];
+                    $arrResposta["CHAPA"] = $row[1];
+                    $arrResposta["LOGIN_MOVER"] = $row[2];
+                    $aux["EXISTE"] = true;
+                } else {
+                    $aux["EXISTE"] = false;
+                    $arrResposta["RESPOSTA"] = "NAO ENCONTRADO";
                 }
+
+                $aux["RESPOSTA"] = $arrResposta;
+                return $aux;
+
+                if (!oci_fetch_array($query)) { }
             } else {
                 print json_encode("Check params, 'ID_EMPRESA', 'CHAPA', 'LMOVER' is required.", JSON_PRETTY_PRINT);
             }
@@ -52,16 +68,11 @@ class LoginSistemaDAO
     public function inserir($conexao, $parametros)
     {
         try {
-            if (
-                !empty($parametros['idEmpresa'] &&
-                    !empty($parametros['chapa'] &&
-                        !empty($parametros['lmover'])))
-            ) {
-                $idEmpresa  = $parametros['idEmpresa'];
-                $chapa      = $parametros['chapa'];
-                $lmover     = $parametros['lmover'];
+            $idEmpresa  = $parametros['idEmpresa'];
+            $chapa      = $parametros['chapa'];
+            $lmover     = $parametros['lmover'];
 
-                $sql = "insert into sys.login_sistema (id_empresa, chapa, lmover)
+            $sql = "insert into sys.login_sistema (id_empresa, chapa, lmover)
                         select 
                              '$idEmpresa'
                             ,'$chapa'
@@ -81,23 +92,24 @@ class LoginSistemaDAO
                         and
                                 sls.lmover = '$lmover'))";
 
-                $query = oci_parse($conexao, $sql);
-                $result = oci_execute($query);
-                if ($result) {
-                    print json_encode([
-                        "Success" => "Data successfully inserted into database..",
-                        "Data" => [
-                            "ID_EMPRESA" => $parametros['idEmpresa'],
-                            "CHAPA" => $parametros['chapa'],
-                            "LMOVER" => $parametros['lmover']
-                        ]
-                    ], JSON_PRETTY_PRINT);
-                } else {
-                    print json_encode(["Error" => "Could not insert data into database, check."], JSON_PRETTY_PRINT);
-                }
-            } else {
-                print json_encode("Check body scope, 'ID_EMPRESA', 'CHAPA' and 'LMOVER' is required.", JSON_PRETTY_PRINT);
+            $query = oci_parse($conexao, $sql);
+
+            if (!oci_execute($query)) {
+                $error  = oci_error($query);
+                $e      = implode(', ', $error);
+                oci_rollback($conexao);
+                $aux["SUCESSO"]     = false;
+                $aux["INSERIDO"]    = false;
+                $aux["RESPOSTA"]    = "ERRO AO INSERIR" . $e;
+                return $aux;
             }
+            $aux["SUCESSO"] = true;
+            $aux["INSERIDO"] = true;
+            $arrResposta = array(
+                "MENSAGEM"  => "INSERIDO COM SUCESSO"
+            );
+            $aux["RESPOSTA"] = $arrResposta;
+            return $aux;
         } catch (Exception $e) {
             return $e;
         }
