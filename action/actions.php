@@ -1,43 +1,27 @@
 <?php
-require_once('../LoginSistema.php');
-require_once('../LoginSistemaDAO.php');
-require_once('../database/config.php');
+//header('Content-type: application/json');
+header('charset:iso-8859-1');
 
-header('Content-type: application/json');
+error_reporting(E_ALL ^ E_NOTICE);
+ini_set('display_errors', 0);
 
-$db      = new Database();
-$conexao = $db->getConection();
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $listar = new Listar();
-    $listar->execute($conexao);
-} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $incluir = new Incluir();
-    $incluir->execute($conexao);
-} else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-    $modificar = new Modificar();
-    $modificar->execute($conexao);
-}
-
-class Listar
+class ListarLoginSistema
 {
-    public function execute($conexao)
+    function execute($conexao)
     {
         $method = $_SERVER['REQUEST_METHOD'];
         if ($method === 'GET') {
-            $db      = new Database();
-            $conexao = $db->getConection();
-
-            $loginSistemaDAO     = new LoginSistemaDAO($db);
+            include_once("loginSistema/loginSistemaDAO");
+            $loginSistemaDAO     = new LoginSistemaDAO($conexao);
             if (!isset($_GET['chapa'])) {
-                $message = json_encode(["response" => "Path is required 'CHAPA'"]);
+                $message = json_encode(array("response" => "Path is required 'CHAPA'"));
             } else {
                 $message = json_encode($loginSistemaDAO->procurar($conexao, array(
                     'chapa' => $_GET['chapa']
                 )));
             }
         } else {
-            $message = json_encode(["Error method" => "Method not permited, please use GET."], JSON_PRETTY_PRINT);
+            $message = json_encode(array("Error method" => "Method not permited, please use GET."), JSON_PRETTY_PRINT);
         }
         echo $message;
     }
@@ -47,6 +31,7 @@ class Incluir
 {
     public function execute($conexao)
     {
+        include_once("loginSistema/loginSistemaDAO");
         $method = $_SERVER['REQUEST_METHOD'];
         if ($method === 'POST') {
             $db      = new Database();
@@ -54,7 +39,7 @@ class Incluir
 
             $body = file_get_contents('php://input');
             $jsonBody = json_decode($body, true);
-            $message = [];
+            $message = array();
 
             if ((!isset($jsonBody["ID_EMPRESA"]))
                 || (!isset($jsonBody["CHAPA"]))
@@ -101,7 +86,7 @@ class Incluir
                 echo json_encode($message, JSON_PRETTY_PRINT);
             }
         } else {
-            $error = ["ERRO" => "METODO NAO PERMITIDO, USAR POST PARA ESSA REQUISICAO."];
+            $error = array("ERRO" => "METODO NAO PERMITIDO, USAR POST PARA ESSA REQUISICAO.");
             echo json_encode($error);
         }
         return 'Incluir';
@@ -112,6 +97,7 @@ class Modificar
 {
     public function execute($conexao)
     {
+        include_once("loginSistema/loginSistemaDAO");
         $method = $_SERVER['REQUEST_METHOD'];
         if ($method === 'PUT') {
             $db      = new Database();
@@ -120,7 +106,7 @@ class Modificar
             $body = file_get_contents('php://input');
             $jsonBody = json_decode($body, true);
 
-            $message = [];
+            $message = array();
 
             if ((!isset($jsonBody["ID_EMPRESA"]))
                 || (!isset($jsonBody["CHAPA"]))
@@ -194,14 +180,14 @@ class Modificar
                     );
                     echo json_encode($modificado);
                 } else {
-                    $notExists = ["RESPOSTA" => "USUARIO NAO EXISTE NO BANCO DE DADOS"];
+                    $notExists = array("RESPOSTA" => "USUARIO NAO EXISTE NO BANCO DE DADOS");
                     echo json_encode($notExists, JSON_PRETTY_PRINT);
                 }
             } else {
                 echo json_encode($message, JSON_PRETTY_PRINT);
             }
         } else {
-            $error = ["METODO" => "METODO NAO PERMITIDO, USAR 'PUT'"];
+            $error = array("METODO" => "METODO NAO PERMITIDO, USAR 'PUT'");
             echo json_encode($error, JSON_PRETTY_PRINT);
         }
         return 'Modificar';
